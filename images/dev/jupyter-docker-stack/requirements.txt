@@ -1,0 +1,13 @@
+ruff
+pyarrow
+duckdb
+load-dotenv
+pytest
+jupyter-black
+cudf-polars-cu12
+polars[deltalake]
+tensorboard
+torchmetrics
+torchvision
+lightning
+optuna
