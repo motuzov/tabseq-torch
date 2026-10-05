@@ -3,32 +3,29 @@ from pathlib import Path
 
 class DataCatalog:
     """
-    The catalog 
+    Paths to the data (payload and meta) prepared for loading into the LazyDataset
     """
+
     def __init__(
         self,
-        src_tabts_path: Path,
-        cat_path: Path,
-        meta_path: Path,
-        targets_path: Path | None = None,
+        cat: Path,
+        num: Path | None = None,
+        targets: Path | None = None,
     ):
-        self.src: Path = src_tabts_path
-        self._cat: Path = cat_path
-        self._meta: Path = meta_path
-        self.targets: Path | None = targets_path
+        self._cat: Path = cat
+        self.num = num
+        self.targets: Path | None = targets
 
-    def cat2code_json(self, setname: str) -> Path:
-        return self._meta / setname / "meta/cat2code.json"
+    def cat2code_json(self, colset_name: str) -> Path:
+        return self._cat / colset_name / "meta/cat2code.json"
 
-    def catnum_json(self, setname: str) -> Path:
-        return self._meta / setname / "meta/catnum.json"
+    def catnum_json(self, colset_name: str) -> Path:
+        return self._cat / colset_name / "meta/catnum.json"
 
-    def cat(self, setname: str = "") -> Path:
+    def cat(self, colset_name: str = "all") -> Path:
         # payload
-        if setname:
-            return self._cat / setname / "tb"
-        return self._cat
+        return self._cat / colset_name / "tb"
 
-    def print_setnames(self) -> None:
-        for setname_dir in self._meta.iterdir():
+    def print_colsets(self) -> None:
+        for setname_dir in self._cat.glob("*/meta"):
             print(setname_dir.name)

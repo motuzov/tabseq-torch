@@ -90,10 +90,12 @@ def _rm_if_exist(encoded_data_dir):
 class Encoder:
     def __init__(
         self,
+        src_tb_path: Path,
         dc: DataCatalog,
         num_parts: int,
         gcol: str,
     ):
+        self._src_tb_path = src_tb_path
         self._dc = dc
         self._num_parts: int = num_parts
         self._pf_encoded_part = pl.DataFrame()
@@ -103,7 +105,7 @@ class Encoder:
         self._cat2code = {}
 
     def _get_chunk(self, part: int, cat_column: str = "") -> pl.DataFrame:
-        q: pl.LazyFrame = pl.scan_parquet(self._dc.src)
+        q: pl.LazyFrame = pl.scan_parquet(self._src_tb_path)
         columns = [self._gcol]
         if cat_column:
             columns.append(cat_column)
@@ -148,7 +150,7 @@ class Encoder:
         return encoded_chunks
 
     def encode_catset(self, setname: str) -> None:
-        cat_path = self._dc.cat(setname=setname)
+        cat_path = self._dc.cat(colset_name=setname)
         _rm_if_exist(cat_path)
         self._cat2code: Cat2Code = read_json(self._dc.cat2code_json(setname))
         for part in range(self._num_parts):
@@ -167,9 +169,9 @@ def encode_cat(
     setname: str,
 ):
     cat2code: Cat2Code = make_cat2code(data_path, columns)
-    write_json(data=cat2code, path=dc.cat2code_json(setname=setname))
+    write_json(data=cat2code, path=dc.cat2code_json(colset_name=setname))
     catnum: CatNum = make_catnum(cat2code)
-    write_json(data=catnum, path=dc.catnum_json(setname=setname))
+    write_json(data=catnum, path=dc.catnum_json(colset_name=setname))
     encoder = Encoder(
         dc=dc,
         num_parts=10,

@@ -1,34 +1,21 @@
-from typing import Any
-from pathlib import Path
-
-import pytest
-
-import torch
-import polars as pl
-import duckdb as dd
-
-from unittest.mock import patch
 import multiprocessing
+from pathlib import Path
+from typing import Any
+from unittest.mock import patch
 
+import polars as pl
+import pytest
+from tabseq_torch.dl.chunk_reader import ChunkIdGenerator, DDChunkReader
+from tabseq_torch.dl.encoder import Cat2Code, CatNum, Encoder, make_cat2code, write_json
 from tabseq_torch.dl.lazy_dataset import (
     CatMetadata,
     LazyDataset,
     random_split,
 )
-
-from tabseq_torch.dl.chunk_reader import ChunkIdGenerator, ChunkReader, DDChunkReader
-
-from tabseq_torch.dl import ColumnType
-
-from tabseq_torch.dl.encoder import CatNum
+from tabseq_torch.dl.lazy_dataset_catalog import DataCatalog
 from tabseq_torch.dl.padded_batch import (
-    collate_padded_batch_fn,
-    dummy_collate_fn,
     GroupData,
 )
-from tabseq_torch.dl.lazy_dataset_catalog import DataCatalog
-
-from tabseq_torch.dl.encoder import write_json, make_cat2code, Cat2Code, Encoder
 
 
 @pytest.fixture
@@ -169,7 +156,7 @@ def catnum(tx_sample) -> CatNum:
 class TestDataCatalog:
     tx: str = "tx"
     target: str = "target"
-    setname: str = "mcc"
+    colset_name: str = "mcc"
 
 
 @pytest.fixture(scope="session")
@@ -179,30 +166,38 @@ def tmp_data_dir(tmp_path_factory) -> Path:
 
 
 @pytest.fixture
+def src_tb_path(tmp_data_dir) -> Path:
+    return tmp_data_dir / TestDataCatalog.tx
+
+
+@pytest.fixture
 def dc(tmp_data_dir) -> DataCatalog:
     return DataCatalog(
-        src_tabts_path=tmp_data_dir / TestDataCatalog.tx,
-        cat_path=tmp_data_dir / "cat",
-        meta_path=tmp_data_dir / "meta",
-        targets_path=tmp_data_dir / TestDataCatalog.target,
+        cat=tmp_data_dir / "cat",
+        targets=tmp_data_dir / TestDataCatalog.target,
     )
 
 
 @pytest.fixture
-def create_test_data(tx_sample, tx_target_sample, catnum: CatNum, dc: DataCatalog):
-    write_json(data=catnum, path=dc.catnum_json(setname=TestDataCatalog.setname))
+def create_test_data(
+    tx_sample, tx_target_sample, catnum: CatNum, src_tb_path, dc: DataCatalog
+):
+    write_json(
+        data=catnum, path=dc.catnum_json(colset_name=TestDataCatalog.colset_name)
+    )
     # pl.DataFrame(tx_sample).write_parquet(dc.src / "1.parquet", mkdir=True)
-    pl.DataFrame(tx_sample).write_parquet(dc.src)
+    pl.DataFrame(tx_sample).write_parquet(src_tb_path)
     pl.DataFrame(tx_target_sample).write_parquet(dc.targets)
     test_columns = ["mcc"]
-    cat2code: Cat2Code = make_cat2code(dc.src, test_columns)
-    write_json(cat2code, dc.cat2code_json(TestDataCatalog.setname))
+    cat2code: Cat2Code = make_cat2code(src_tb_path, test_columns)
+    write_json(cat2code, dc.cat2code_json(TestDataCatalog.colset_name))
     encoder = Encoder(
+        src_tb_path=src_tb_path,
         dc=dc,
         num_parts=10,
         gcol="app_id",
     )
-    encoder.encode_catset(setname=TestDataCatalog.setname)
+    encoder.encode_catset(setname=TestDataCatalog.colset_name)
 
 
 @pytest.fixture
@@ -238,11 +233,9 @@ def test_num_calasses(create_test_data, dc, lazy_dataset):
     assert lazy_dataset.num_classes == 2
 
 
-def test_lazy_random_split(
-    create_test_data, lazy_dataset: LazyDataset, dc: DataCatalog, tx_sample
-):
+def test_lazy_random_split(create_test_data, lazy_dataset, src_tb_path, dc, tx_sample):
     lazy_dataset.set_catdata(
-        data_path=dc.src, columns_to_select=["mcc"], catnum_json=Path(".")
+        data_path=src_tb_path, columns_to_select=["mcc"], catnum_json=Path(".")
     )
     train_ds, test_ds = random_split(lazy_dataset, test_size=0.3)
     assert len(train_ds.chunk_reader) + len(test_ds.chunk_reader) == len(lazy_dataset)
@@ -309,9 +302,9 @@ def test_multi_proc_prqtscan(tmp_data_dir, tx_sample, capsys):
 
 
 def test_lazy_dataset_init(
-    create_test_data, lazy_dataset, dc: DataCatalog, tx_sample, tx_target_sample
+    create_test_data, lazy_dataset, src_tb_path, dc, tx_sample, tx_target_sample
 ):
-    lazy_dataset.set_numdata(data_path=dc.src, columns_to_select=["amnt"])
+    lazy_dataset.set_numdata(data_path=src_tb_path, columns_to_select=["amnt"])
     lazy_dataset.set_targetmeta(data_path=dc.targets, target_column="flag")
     size = 0
     gd: GroupData

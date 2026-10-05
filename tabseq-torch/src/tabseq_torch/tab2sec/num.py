@@ -1,6 +1,7 @@
-from tabseq_torch.dl import PaddedTabBatch, ColumnType
-from tabseq_torch.tab2sec import Encoder
 import torch
+
+from tabseq_torch.dl import ColumnType, PaddedTabBatch
+from tabseq_torch.tab2sec import Encoder
 
 
 class NumColumnsEncoder(Encoder):

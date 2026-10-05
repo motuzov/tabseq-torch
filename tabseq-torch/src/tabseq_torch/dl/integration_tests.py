@@ -38,7 +38,7 @@ def ds_memory_usage_tx(
     lazy_dataset.set_catdata(
         data_path=tx_dc.cat(setname),
         columns_to_select=cat_columns_to_select,
-        catnum_json=tx_dc.catnum_json(setname=setname),
+        catnum_json=tx_dc.catnum_json(colset_name=setname),
     )
     lazy_dataset.set_numdata(
         data_path=tx_dc.src, columns_to_select=num_columns_to_select
