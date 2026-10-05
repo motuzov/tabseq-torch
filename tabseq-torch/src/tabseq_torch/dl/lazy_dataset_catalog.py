@@ -2,6 +2,9 @@ from pathlib import Path
 
 
 class DataCatalog:
+    """
+    The catalog 
+    """
     def __init__(
         self,
         src_tabts_path: Path,
@@ -23,7 +26,7 @@ class DataCatalog:
     def cat(self, setname: str = "") -> Path:
         # payload
         if setname:
-            return self._cat / setname / "payload"
+            return self._cat / setname / "tb"
         return self._cat
 
     def print_setnames(self) -> None:
