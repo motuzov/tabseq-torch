@@ -62,7 +62,7 @@ class TbDataset:
         return GroupData(
             column_seq={
                 column: self._items2seq(group_items[column], cast(str, column))
-                for column in self._column2type.keys()
+                for column in self._column2type
             },
             type_columns=self._type_columns,
             target=target,

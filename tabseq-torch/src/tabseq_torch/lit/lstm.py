@@ -1,14 +1,15 @@
-import torch
 import lightning as L
-from tabseq_torch.nn.lstm import TabLSTM, PoolingType
-from tabseq_torch.tab2sec import CatColumnsEncoder, NumColumnsEncoder, Encoder, Tab2Seq
+import torch
+from torchmetrics.classification import MulticlassAccuracy
+
 from tabseq_torch.dl import (
-    PaddedTabBatch,
     CatColEmbeddingParams,
     ColumnsByType,
     ColumnType,
+    PaddedTabBatch,
 )
-from torchmetrics.classification import MulticlassAccuracy
+from tabseq_torch.nn.lstm import PoolingType, TabLSTM
+from tabseq_torch.tab2sec import CatColumnsEncoder, Encoder, NumColumnsEncoder, Tab2Seq
 
 
 class LitMulticlassTabLSTM(L.LightningModule):
@@ -21,6 +22,7 @@ class LitMulticlassTabLSTM(L.LightningModule):
         num_layers: int,
         lr=1e-3,
         weight_decay_rate=0.001,
+        attention=True,
     ):
         super().__init__()
         self._weight_decay_rate = weight_decay_rate
@@ -36,6 +38,7 @@ class LitMulticlassTabLSTM(L.LightningModule):
             h_size=h_size,
             num_classes=num_classes,
             pooling_type=PoolingType.LAST,
+            attention=attention,
             num_layers=num_layers,
         )
         self.loss = torch.nn.CrossEntropyLoss()

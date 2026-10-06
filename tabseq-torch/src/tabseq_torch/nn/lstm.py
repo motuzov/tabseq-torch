@@ -1,9 +1,9 @@
 from enum import Enum, auto
+from typing import Protocol
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from typing import Protocol
+from torch import nn
 
 
 class RNNPooling:
