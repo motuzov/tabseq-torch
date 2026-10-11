@@ -1,3 +1,4 @@
+from tabseq_torch.dl.chunk_reader import ChunkReader as ChunkReader
 from tabseq_torch.dl.chunk_reader import DDChunkReader as DDChunkReader
 from tabseq_torch.dl.encoder import (
     CatColEmbeddingParams as CatColEmbeddingParams,
@@ -28,7 +29,7 @@ from tabseq_torch.dl.lazy_dataset import (
 from tabseq_torch.dl.lazy_dataset import (
     read_num_grous as read_num_grous,
 )
-from tabseq_torch.dl.lazy_dataset_catalog import DataCatalog as DataCatalog
+from tabseq_torch.dl.lazy_dataset_catalog import DataCatalog as LzDatasetCatalog
 from tabseq_torch.dl.padded_batch import (
     PaddedTabBatch as PaddedTabBatch,
 )

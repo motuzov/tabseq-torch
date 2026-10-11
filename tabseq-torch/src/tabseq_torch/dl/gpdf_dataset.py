@@ -26,8 +26,8 @@ def encode_categorical_cl(
 
 class PdDataset(TbDataset, Dataset):
     """
-    Dataset backed by grouped Pandas df
-    the tbts_path data has not encoded, the encoding will be done on on fly
+    Dataset backed by grouped Pandas DataFrame
+    the tbts_path data has not encoded, the encoding will be done on fly
     """
 
     def __init__(
