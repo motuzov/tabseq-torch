@@ -6,12 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
-from dotenv import load_dotenv
 from tabseq_torch.dl import LzDatasetCatalog, PdDataset
 
 from .data_catalog import DC
-
-load_dotenv()
 
 
 @dataclass
@@ -146,14 +143,13 @@ def prep():
 
 
 def create_lzdataset(
-    encodeed_cat_columns: list[str], encodeed_cat_columns_setname: str
-):
-    pass
-    # pd_dataset = PdDataset(
-    #     tbts_path=src_parquet,
-    #     tbts_groupby_column=_GROUP,
-    #     cat_columns=_CAT_COLUMNS,
-    #     num_columns=_NUM_COLUMNS,
-    #     targets_path=data_path / f"{filename}-labels.parquet",
-    #     target_column=_LABELES_COL,
-    # )
+    cat_columns: list[str], encodeed_cat_columns_setname: str
+) -> PdDataset:
+    return PdDataset(
+        tbts_path=dc.num,
+        tbts_groupby_column=meta.g_col_name,
+        cat_columns=cat_columns,
+        num_columns=["F", "F_Rank", "T"],
+        targets_path=dc.targets,
+        target_column=meta.labels_col_name,
+    )
