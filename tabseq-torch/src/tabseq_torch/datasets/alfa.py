@@ -2,43 +2,24 @@ from dataclasses import dataclass
 
 import git
 import polars as pl
+from tqdm import tqdm
 
 from tabseq_torch.dl import (
-    ChunkReader,
     DDChunkReader,
     LazyDataset,
     LzDatasetCatalog,
     TargetsMetadata,
 )
+from tabseq_torch.dl.encoder import encode_cat
 
 from .data_catalog import DC
 
-
-class Meta:
-    def __init__(self):
-        self._name = "alfa"
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def num_columns(self):
-        return ["amnt", "days_before", "transaction_number", "hour_diff"]
-
-    @property
-    def cat_columns(self):
-        col_filter = self.num_columns + ["__index_level_0__", "app_id"]
-        q = pl.scan_parquet(dc.src)
-        return [c for c in q.collect_schema() if c not in col_filter]
-
-
-meta = Meta()
+_NAME = "alfa"
 
 
 class RawDataCatalog:
     def __init__(self):
-        self._raw = DC.raw / meta.name
+        self._raw = DC.raw / _NAME
 
     @property
     def raw(self):
@@ -60,19 +41,59 @@ class RawDataCatalog:
 raw_data_catalog = RawDataCatalog()
 
 
+class Meta:
+    def __init__(self):
+        self._name = _NAME
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def num_columns(self):
+        return ["amnt", "days_before", "transaction_number", "hour_diff"]
+
+    @property
+    def cat_columns(self):
+        col_filter = self.num_columns + ["__index_level_0__", "app_id"]
+        q = pl.scan_parquet(raw_data_catalog.train_tx)
+        return [c for c in q.collect_schema() if c not in col_filter]
+
+
+meta = Meta()
+
+
 def load():
+
+    giturl = "https://huggingface.co/datasets/dllllb/alfa-scoring-trx"
+    print(f"load data from: {giturl}")
+    print(f"to: {raw_data_catalog.raw}")
+    raw_data_catalog.raw.mkdir(parents=True, exist_ok=True)
     git.Repo.clone_from(
-        "https://huggingface.co/datasets/dllllb/alfa-scoring-trx",
-        raw_data_catalog.scoring_trx,
+        giturl,
+        raw_data_catalog.train_tx,
         depth=1,
     )
 
 
 dc = LzDatasetCatalog(
-    num=raw_data_catalog.scoring_trx,
+    num=raw_data_catalog.train_tx,
     cat=DC.datasets / meta.name / "cat",
     targets=raw_data_catalog.train_target,
 )
+
+
+def prep(setname: str = "allcats"):
+    """
+    encode categorical columns
+    """
+    encode_cat(
+        data_path=raw_data_catalog.train_tx,
+        dc=dc,
+        columns=meta.cat_columns,
+        groupby="app_id",
+        setname=setname,
+    )
 
 
 def create_lzdataset(chunk_reader, loader_name: str) -> LazyDataset:
