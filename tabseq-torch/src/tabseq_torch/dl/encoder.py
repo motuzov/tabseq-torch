@@ -173,6 +173,7 @@ def encode_cat(
     catnum: CatNum = make_catnum(cat2code)
     write_json(data=catnum, path=dc.catnum_json(colset_name=setname))
     encoder = Encoder(
+        src_tb_path=data_path,
         dc=dc,
         num_parts=10,
         gcol=groupby,
