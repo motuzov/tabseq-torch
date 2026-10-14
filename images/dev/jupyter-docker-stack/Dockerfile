@@ -13,6 +13,7 @@ USER ${NB_UID}
 COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt
+ENV TABSEQ_HOME=/home/jovyan/data/tabseq/
 
 # COPY setup.sh setup.sh
 
