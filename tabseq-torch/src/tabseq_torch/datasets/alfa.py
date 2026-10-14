@@ -31,7 +31,7 @@ class RawDataCatalog:
 
     @property
     def train_tx(self):
-        return self.scoring_trx / "train_transactions"
+        return self.scoring_trx / "train_transactions/train_transactions"
 
     @property
     def train_target(self):
