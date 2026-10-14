@@ -1,8 +1,5 @@
-from dataclasses import dataclass
-
 import git
 import polars as pl
-from tqdm import tqdm
 
 from tabseq_torch.dl import (
     DDChunkReader,
@@ -14,12 +11,10 @@ from tabseq_torch.dl.encoder import encode_cat
 
 from .data_catalog import DC
 
-_NAME = "alfa"
-
 
 class RawDataCatalog:
     def __init__(self):
-        self._raw = DC.raw / _NAME
+        self._raw = DC.raw
 
     @property
     def raw(self):
@@ -31,7 +26,7 @@ class RawDataCatalog:
 
     @property
     def train_tx(self):
-        return self.scoring_trx / "train_transactions/train_transactions"
+        return self.scoring_trx / "train_transactions"
 
     @property
     def train_target(self):
@@ -42,12 +37,9 @@ raw_data_catalog = RawDataCatalog()
 
 
 class Meta:
-    def __init__(self):
-        self._name = _NAME
-
     @property
     def name(self):
-        return self._name
+        return raw_data_catalog.scoring_trx.stem
 
     @property
     def num_columns(self):
@@ -68,10 +60,12 @@ def load():
     giturl = "https://huggingface.co/datasets/dllllb/alfa-scoring-trx"
     print(f"load data from: {giturl}")
     print(f"to: {raw_data_catalog.raw}")
+    if raw_data_catalog.scoring_trx.exists():
+        return
     raw_data_catalog.raw.mkdir(parents=True, exist_ok=True)
     git.Repo.clone_from(
         giturl,
-        raw_data_catalog.train_tx,
+        raw_data_catalog.scoring_trx,
         depth=1,
     )
 
@@ -83,17 +77,18 @@ dc = LzDatasetCatalog(
 )
 
 
-def prep(setname: str = "allcats"):
+def prep(setname: str = "all"):
     """
     encode categorical columns
     """
-    encode_cat(
-        data_path=raw_data_catalog.train_tx,
-        dc=dc,
-        columns=meta.cat_columns,
-        groupby="app_id",
-        setname=setname,
-    )
+    if not dc.cat(setname).exists():
+        encode_cat(
+            data_path=raw_data_catalog.train_tx,
+            dc=dc,
+            columns=meta.cat_columns,
+            groupby="app_id",
+            setname=setname,
+        )
 
 
 def create_lzdataset(chunk_reader, loader_name: str) -> LazyDataset:

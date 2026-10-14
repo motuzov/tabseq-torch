@@ -28,4 +28,9 @@ class DataCatalog:
 
     def print_colsets(self) -> None:
         for setname_dir in self._cat.glob("*/meta"):
-            print(setname_dir.name)
+            print(setname_dir.parent.name)
+
+    def show(self):
+        self.print_colsets()
+        print("numerical payload: ", self.num)
+        print("categorical payload: ", self.cat())
