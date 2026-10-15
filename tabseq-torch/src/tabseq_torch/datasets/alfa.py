@@ -1,3 +1,5 @@
+from enum import Enum, auto
+
 import git
 import polars as pl
 
@@ -10,6 +12,9 @@ from tabseq_torch.dl import (
 from tabseq_torch.dl.encoder import encode_cat
 
 from .data_catalog import DC
+from typing import Literal
+
+type ChunkReader = Literal["DDChunkReader"]
 
 
 class RawDataCatalog:
@@ -92,24 +97,34 @@ def prep(setname: str = "all"):
         )
 
 
-def create_lzdataset(chunk_reader, loader_name: str) -> LazyDataset:
+def create_lzdataset(
+    chunk_reader: ChunkReader = "DDChunkReader",
+    num_chunk_per_worker=10,
+    colset_name="all",
+    num_columns=meta.num_columns,
+) -> LazyDataset:
     num_chunk_per_worker = 10
-    lazy_dataset = LazyDataset(
-        chunk_reader=DDChunkReader(
-            groupby="app_id",
-            num_chunk_per_worker=num_chunk_per_worker,
-            num_groups=TargetsMetadata.num_groups(DC.targets),
-            memlimit_gb=0.2,
-        )
+    match chunk_reader:
+        case "DDChunkReader":
+            chunk_reader = DDChunkReader(
+                groupby="app_id",
+                num_chunk_per_worker=num_chunk_per_worker,
+                num_groups=TargetsMetadata.num_groups(dc.targets),
+                memlimit_gb=0.2,
+            )
+
+        case "_":
+            raise ValueError("wrong chunk reader")
+
+    lazy_dataset = LazyDataset(chunk_reader=chunk_reader)
+    lazy_dataset.set_catdata(
+        data_path=dc.cat(colset_name=colset_name),
+        columns_to_select=meta.cat_columns,
+        catnum_json=dc.catnum_json(colset_name=colset_name),
     )
-    # lazy_dataset.set_catdata(
-    #     data_path=dc.cat(encoded_columns_setname),
-    #     columns_to_select=cat_columns,
-    #     catnum_json=dc.catnum_json(setname=encoded_columns_setname),
-    # )
-    # lazy_dataset.set_numdata(
-    #     data_path=dc.src,
-    #     columns_to_select=num_columns,
-    # )
-    # lazy_dataset.set_targetmeta(dc.targets, target_column="flag")
-    # return lazy_dataset
+    lazy_dataset.set_numdata(
+        data_path=dc.num,
+        columns_to_select=num_columns,
+    )
+    lazy_dataset.set_targetmeta(dc.targets, target_column="flag")
+    return lazy_dataset
