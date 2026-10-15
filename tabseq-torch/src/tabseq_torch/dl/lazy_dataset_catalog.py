@@ -16,10 +16,10 @@ class DataCatalog:
         self.num = num
         self.targets: Path | None = targets
 
-    def cat2code_json(self, colset_name: str) -> Path:
+    def cat2code_json(self, colset_name: str = "all") -> Path:
         return self._cat / colset_name / "meta/cat2code.json"
 
-    def catnum_json(self, colset_name: str) -> Path:
+    def catnum_json(self, colset_name: str = "all") -> Path:
         return self._cat / colset_name / "meta/catnum.json"
 
     def cat(self, colset_name: str = "all") -> Path:
