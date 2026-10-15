@@ -184,7 +184,7 @@ class LazyDataset(TbDataset, IterableDataset):
     def chunk_reader(self) -> ChunkReader:
         return self._chunk_reader
 
-    def set_data_cource(
+    def set_data_source(
         self,
         meta: TbMetadata,
     ):
@@ -209,7 +209,7 @@ class LazyDataset(TbDataset, IterableDataset):
             groupby_column=self._groupby_column,
             columns_to_select=columns_to_select,
         )
-        self.set_data_cource(meta=meta)
+        self.set_data_source(meta=meta)
 
     @property
     def catnum(self) -> CatNum:
@@ -226,7 +226,7 @@ class LazyDataset(TbDataset, IterableDataset):
         raise Exception("catdata is not set, see set_catdata")
 
     def set_numdata(self, data_path: Path, columns_to_select: list[str]) -> None:
-        self.set_data_cource(
+        self.set_data_source(
             meta=NumMetadata(
                 data_path=data_path,
                 groupby_column=self._groupby_column,
@@ -240,7 +240,7 @@ class LazyDataset(TbDataset, IterableDataset):
             colname=target_column,
             groupby_column=self._groupby_column,
         )
-        self.set_data_cource(meta=self.targetmeta)
+        self.set_data_source(meta=self.targetmeta)
         self.target_column = self.targetmeta.colname
 
     def validate(self) -> None:
