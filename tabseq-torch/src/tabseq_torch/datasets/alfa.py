@@ -73,7 +73,7 @@ def load():
 dc = LzDatasetCatalog(
     num=raw_data_catalog.train_tx,
     cat=DC.datasets / meta.name / "cat",
-    targets=raw_data_catalog.train_target,
+    targets=DC.datasets / meta.name / "targets.parquet",
 )
 
 
@@ -81,6 +81,7 @@ def prep(setname: str = "all"):
     """
     encode categorical columns
     """
+    pl.scan_csv(raw_data_catalog.train_target).sink_parquet(dc.targets)
     if not dc.cat(setname).exists():
         encode_cat(
             data_path=raw_data_catalog.train_tx,
