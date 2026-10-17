@@ -1,16 +1,26 @@
-from tabseq_torch.dl import PdDataset
+from tabseq_torch.dl import LazyDataset
+from tabseq_torch.dl.create_lzdataset import ChunkReaderNames
+from tabseq_torch.dl.create_lzdataset import (
+    create_lzdataset as create,
+)
 
 from .etl import dc, meta
 
 
 def create_lzdataset(
-    cat_columns: list[str], encodeed_cat_columns_setname: str
-) -> PdDataset:
-    return PdDataset(
-        tbts_path=dc.num,
-        tbts_groupby_column=meta.g_col_name,
-        cat_columns=cat_columns,
-        num_columns=meta.num_columns,
-        targets_path=dc.targets,
+    chunk_reader: ChunkReaderNames = "DDChunkReader",
+    num_chunk_per_worker=10,
+    colset_name="all",
+    num_columns=meta.num_columns,
+) -> LazyDataset:
+
+    return create(
+        dc=dc,
+        cat_columns=meta.cat_columns,
+        num_columns=num_columns,
+        groupby=meta.g_col_name,
         target_column=meta.labels_col_name,
+        chunk_reader=chunk_reader,
+        num_chunk_per_worker=num_chunk_per_worker,
+        colset_name=colset_name,
     )

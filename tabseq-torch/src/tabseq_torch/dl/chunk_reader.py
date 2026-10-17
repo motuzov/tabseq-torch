@@ -178,7 +178,7 @@ class DDChunkReader(ChunkReader):
 
     def select_subset(self, rel: dd.DuckDBPyRelation) -> dd.DuckDBPyRelation:
         return (
-            rel.select(f"hash(app_id) % {self.num_groups} as gidx, *")
+            rel.select(f"hash({self.groupby}) % {self.num_groups} as gidx, *")
             .filter(
                 f" {self._subset_idx_lower_bound} <= gidx  AND gidx < {self._subset_idx_upper_bound}"
             )
@@ -273,7 +273,7 @@ class DDChunkReader(ChunkReader):
             self._subset_idx_lower_bound += round(self.__len__() * test_size)
         len_ = (
             self.select_subset(conn.read_parquet(str(data_path)))
-            .aggregate("count (distinct app_id) as test_len")
+            .aggregate(f"count (distinct {self.groupby}) as test_len")
             .fetchall()[0][0]
         )
         self._is_subset = True

@@ -7,6 +7,14 @@ from pathlib import Path
 
 import pandas as pd
 from tabseq_torch.dl import LzDatasetCatalog
+from tabseq_torch.dl.encoder import (
+    Cat2Code,
+    CatNum,
+    encode_cat,
+    make_cat2code,
+    make_catnum,
+    write_json,
+)
 
 from ..data_catalog import DC
 
@@ -17,6 +25,7 @@ class Mata:
     name_chars: str = "name_chars"
     g_col_name: str = "G"
     num_columns = ("F", "F_Rank", "T")
+    cat_columns = ("name_chars", "vc")
     T: str = "T"
     labels_col_name: str = "labels"
 
@@ -147,3 +156,12 @@ def prep():
     print(dc.num)
     print(df_tb_wiht_num_features.head(3))
     df_tb_wiht_num_features.to_parquet(path=dc.num, engine="pyarrow")
+    encode_cat(
+        data_path=dc.num,
+        dc=dc,
+        columns=meta.cat_columns,
+        groupby=meta.g_col_name,
+        setname="all",
+        num_parts=1,
+    )
+    dc.show()

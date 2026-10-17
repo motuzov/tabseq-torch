@@ -167,6 +167,7 @@ def encode_cat(
     columns: list[str],
     groupby: str,
     setname: str,
+    num_parts=10,
 ):
     cat2code: Cat2Code = make_cat2code(data_path, columns)
     write_json(data=cat2code, path=dc.cat2code_json(colset_name=setname))
@@ -175,7 +176,7 @@ def encode_cat(
     encoder = Encoder(
         src_tb_path=data_path,
         dc=dc,
-        num_parts=10,
+        num_parts=num_parts,
         gcol=groupby,
     )
     encoder.estimated_size(setname=setname, unit="gb")

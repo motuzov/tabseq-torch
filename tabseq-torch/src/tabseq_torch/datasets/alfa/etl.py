@@ -47,6 +47,14 @@ class Meta:
         q = pl.scan_parquet(raw_data_catalog.train_tx)
         return [c for c in q.collect_schema() if c not in col_filter]
 
+    @property
+    def groupby(self) -> str:
+        return "app_id"
+
+    @property
+    def target_column(self) -> str:
+        return "flags"
+
 
 meta = Meta()
 
@@ -84,7 +92,7 @@ def prep(setname: str = "all"):
             data_path=raw_data_catalog.train_tx,
             dc=dc,
             columns=meta.cat_columns,
-            groupby="app_id",
+            groupby=meta.groupby,
             setname=setname,
         )
     print("numerical columns:")
