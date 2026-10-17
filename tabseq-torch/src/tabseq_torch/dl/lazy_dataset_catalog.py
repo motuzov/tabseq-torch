@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 
 class DataCatalog:
@@ -27,8 +28,13 @@ class DataCatalog:
         return self._cat / colset_name / "tb"
 
     def print_colsets(self) -> None:
+        print("categorical columns sets:")
         for setname_dir in self._cat.glob("*/meta"):
-            print(setname_dir.parent.name)
+            columnset_name = setname_dir.parent.name
+            print(f"{columnset_name}:")
+            with open(self.catnum_json()) as f:
+                meat_data = json.load(f)
+                print(",".join(meat_data.keys()))
 
     def show(self):
         self.print_colsets()
