@@ -6,14 +6,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+import polars as pl
 from tabseq_torch.dl import LzDatasetCatalog
 from tabseq_torch.dl.encoder import (
-    Cat2Code,
-    CatNum,
     encode_cat,
-    make_cat2code,
-    make_catnum,
-    write_json,
+    encode_targets,
 )
 
 from ..data_catalog import DC
@@ -86,10 +83,11 @@ def prep():
     os.makedirs(_dataset_path, exist_ok=True)
     file_names = sorted([f_path.name for f_path in path.glob("*.txt")])
 
+    lable_anotatins = "anotatin"
     df = pd.DataFrame(
         dict(
             zip(
-                [meta.name_chars, meta.labels_col_name],
+                [meta.name_chars, lable_anotatins],
                 load_labeled_names(names_data_path=path, file_names=file_names),
             )
         )
@@ -98,15 +96,22 @@ def prep():
     print(df.head(3))
 
     labels_path = dc.targets
-    df_labels = df[[meta.labels_col_name]]
+    df_labels = df[[lable_anotatins]]
     df_labels[meta.g_col_name] = df.index
-    df_labels.to_parquet(labels_path, engine="pyarrow")
+
+    # df_labels.to_parquet(labels_path, engine="pyarrow")
+    encode_targets(
+        pl.from_pandas(df_labels).lazy(),
+        dst=labels_path,
+        src_column=lable_anotatins,
+        dst_column=meta.labels_col_name,
+    )
     print("labels:")
     print(labels_path)
     print(df_labels.head())
 
     df_tb = (
-        df.loc[:, df.columns != meta.labels_col_name]
+        df.loc[:, df.columns != lable_anotatins]
         .explode(meta.name_chars)
         .reset_index()
         .rename(columns={"index": meta.g_col_name})

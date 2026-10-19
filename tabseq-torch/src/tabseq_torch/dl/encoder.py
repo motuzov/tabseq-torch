@@ -5,6 +5,7 @@ import sys
 from collections.abc import Hashable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import overload
 
 import polars as pl
 from polars._typing import SizeUnit
@@ -29,12 +30,30 @@ def write_json(data: dict, path: Path) -> None:
 Cat2Code = dict[str, dict[Hashable, int]]
 
 
-def encode_targets(src: Path, dst: Path, src_column: str, dst_column=""):
+def _encode_targets(lf: pl.LazyFrame, dst: Path, src_column: str, dst_column: str):
     if not dst_column:
         dst_column = src_column
-    pl.scan_parquet(src).with_columns(
-        pl.col(src_column).rank("dense").alias(dst_column)
-    ).with_columns(pl.col(dst_column) - 1).sink_parquet(dst, mkdir=True)
+    lf.with_columns(pl.col(src_column).rank("dense").alias(dst_column)).with_columns(
+        pl.col(dst_column) - 1
+    ).sink_parquet(dst, mkdir=True)
+
+
+@overload
+def encode_targets(src: Path, dst: Path, src_column: str, dst_column: str) -> None: ...
+@overload
+def encode_targets(
+    src: pl.LazyFrame, dst: Path, src_column: str, dst_column: str
+) -> None: ...
+
+
+def encode_targets(src, dst: Path, src_column: str, dst_column=""):
+    if isinstance(src, Path):
+        lf = pl.scan_parquet(src)
+    elif isinstance(src, pl.LazyFrame):
+        lf = src
+    else:
+        raise TypeError("Unsupported type")
+    _encode_targets(lf=lf, dst=dst, src_column=src_column, dst_column=dst_column)
 
 
 class Cat2CodeCreator:
