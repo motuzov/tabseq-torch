@@ -1,6 +1,6 @@
 from tabseq_torch.dl import LazyDataset
 from tabseq_torch.dl.create_lzdataset import ChunkReaderNames
-from tabseq_torch.dl import (
+from tabseq_torch.dl.create_lzdataset import (
     create_lzdataset as create,
 )
 
