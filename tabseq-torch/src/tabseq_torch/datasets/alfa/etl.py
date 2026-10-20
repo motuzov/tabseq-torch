@@ -53,7 +53,7 @@ class Meta:
 
     @property
     def target_column(self) -> str:
-        return "flags"
+        return "flag"
 
 
 meta = Meta()
