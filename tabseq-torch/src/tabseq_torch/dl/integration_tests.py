@@ -6,30 +6,31 @@ import polars as pl
 from torch.utils.data import DataLoader
 
 from tabseq_torch.dl import (
-    DataCatalog,
+    LzDatasetCatalog,
     DDChunkReader,
     LazyDataset,
     ds_memory_usage,
     read_num_grous,
 )
 from tabseq_torch.dl.group_data import GroupData
-from tabseq_torch.dl.padded_batch import PaddedTabBatch
 
 
 def ds_memory_usage_tx(
-    tx_dc: DataCatalog,
+    tx_dc: LzDatasetCatalog,
     num_chunk_per_worker: int,
     memlimit_gb: float,
-    cat_columns_to_select: list[str] = ["mcc"],
-    num_columns_to_select: list[str] = ["amnt"],
+    cat_columns_to_select: list[str],
+    num_columns_to_select: list[str],
+    groupby: str,
+    target_column: str,
     dryrun: bool = True,
     read_groups=True,
     setname="test",
 ) -> int:
-    num_grous = read_num_grous(tx_dc.targets, groupby="app_id")
+    num_grous = read_num_grous(tx_dc.targets, groupby=groupby)
 
     chunk_reader = DDChunkReader(
-        groupby="app_id",
+        groupby=groupby,
         num_chunk_per_worker=num_chunk_per_worker,
         num_groups=num_grous,
         memlimit_gb=memlimit_gb,
@@ -41,9 +42,9 @@ def ds_memory_usage_tx(
         catnum_json=tx_dc.catnum_json(colset_name=setname),
     )
     lazy_dataset.set_numdata(
-        data_path=tx_dc.src, columns_to_select=num_columns_to_select
+        data_path=tx_dc.num, columns_to_select=num_columns_to_select
     )
-    lazy_dataset.set_targetmeta(data_path=tx_dc.targets, target_column="flag")
+    lazy_dataset.set_targetmeta(data_path=tx_dc.targets, target_column=target_column)
     return ds_memory_usage(
         lazy_dataset=lazy_dataset,
         num_chunk_per_worker=num_chunk_per_worker,
@@ -51,25 +52,6 @@ def ds_memory_usage_tx(
         dryrun=dryrun,
         read_groups=read_groups,
     )
-
-
-def mcc_loading_test(
-    dl: DataLoader,
-    mcc: pd.DataFrame,
-) -> str:
-    ptb: PaddedTabBatch
-    for ptb in iter(dl):
-        for sidx, mcc_seq in enumerate(ptb["mcc"]):
-            gid = ptb._groups[sidx]
-            sl = ptb.lengths[sidx]
-            if not mcc_seq.sum() == mcc_seq[:sl].sum():
-                return f"boken len group={gid}: {sl}"
-            ptb.lengths[sidx]
-            seq = mcc.loc[gid]["mcc"]
-            expected_seq = mcc_seq[:sl].numpy()
-            if not np.array_equal(seq, expected_seq):
-                return f"boken group gid:{gid}\n{seq}\n{expected_seq}"
-    return "Ok!"
 
 
 def n_rows_expected(data_path: Path) -> int:

@@ -162,7 +162,7 @@ class DDChunkReader(ChunkReader):
 
     def chunk_loading_memory_usage(
         self,
-        memunit: MemUnit = MemUnit.MB,
+        memunit: MemUnit = MemUnit.GB,
     ) -> str:
         return f"{(self._chunk_loading_memory_usage / memunit.value):.1f}{memunit.name}"
 
