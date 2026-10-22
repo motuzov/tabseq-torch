@@ -17,7 +17,7 @@ def create_lzdataset(
     chunk_reader: ChunkReaderNames = "DDChunkReader",
     num_chunk_per_worker=10,
     colset_name="all",
-) -> DataCatalog:
+) -> LazyDataset:
     match chunk_reader:
         case "DDChunkReader":
             chunk_reader = DDChunkReader(
