@@ -86,6 +86,7 @@ def prep(setname: str = "all"):
     encode categorical columns
     """
     if not dc.targets.exists():
+        dc.targets.parent.mkdir(parents=True, exist_ok=True)
         pl.scan_csv(raw_data_catalog.train_target).sink_parquet(dc.targets)
     if not dc.cat(setname).exists():
         encode_cat(
