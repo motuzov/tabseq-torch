@@ -137,7 +137,7 @@ class DDChunkReader(ChunkReader):
         self._num_chunk_columns = []
         self._target_chunk_columns = []
 
-        self._chunk_infos: list[ChunkInfo] = []
+        self._chunks_info: list[ChunkInfo] = []
 
         self._groups_to_filter: list[int] = []
         self._is_subset = False
@@ -152,7 +152,7 @@ class DDChunkReader(ChunkReader):
         columns_to_select: list[str],
         do_groupby: bool = True,
     ) -> None:
-        self._chunk_infos.append(
+        self._chunks_info.append(
             ChunkInfo(
                 data_path=data_path,
                 columns_to_select=columns_to_select,
@@ -223,11 +223,8 @@ class DDChunkReader(ChunkReader):
         for d in self._chunk_dfs:
             del d
         self._chunk_dfs.clear()
-        chunk_infos: ChunkInfo
-        for chunk_infos in self._chunk_infos:
-            self._chunk_dfs.append(
-                self._read_chunk(chunk_id=chunk_id, info=chunk_infos)
-            )
+        for chunk_info in self._chunks_info:
+            self._chunk_dfs.append(self._read_chunk(chunk_id=chunk_id, info=chunk_info))
 
     def print_meme_usage(self):
         print(f"loading: memory usage: {self.chunk_loading_memory_usage()}")
