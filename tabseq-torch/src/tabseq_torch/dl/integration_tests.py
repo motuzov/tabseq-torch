@@ -6,13 +6,13 @@ import polars as pl
 from torch.utils.data import DataLoader
 
 from tabseq_torch.dl import (
-    LzDatasetCatalog,
     DDChunkReader,
     LazyDataset,
+    LzDatasetCatalog,
     ds_memory_usage,
     read_num_grous,
 )
-from tabseq_torch.dl.seqdata import SeqData
+from tabseq_torch.dl.gdata import GroupTensors
 
 
 def ds_memory_usage_tx(
@@ -81,7 +81,7 @@ def check_column_reading(
     cl: str,
 ) -> None:
     expected_names = read_column_goups(data_path=data_path, groupby=groupby, cl=cl)
-    gd: SeqData
+    gd: GroupTensors
     for gd in lazy_dataset:
         seq = gd.column_tensor[cl]
         expected_names.loc[gd.gid][cl]

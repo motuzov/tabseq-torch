@@ -5,7 +5,7 @@ import numpy.typing as npt
 import pandas as pd
 from torch.utils.data import Dataset
 
-from tabseq_torch.dl.seqdata import SeqData
+from tabseq_torch.dl.gdata import GroupTensors
 
 from .encoder import CatNum
 from .tb_dataset import TbDataset
@@ -85,7 +85,7 @@ class PdDataset(TbDataset, Dataset):
     def __len__(self) -> int:
         return self._grouped_df_tdts.ngroups
 
-    def __getitem__(self, idx) -> SeqData:
+    def __getitem__(self, idx) -> GroupTensors:
         df_g = self._grouped_df_tdts.get_group(idx).loc[:, self._loc_columns_filter]
         group_items: TbGroupItems = df_g.to_dict(orient="list")
         group_items[self.target_column] = self._targets.iloc[idx][self.target_column]

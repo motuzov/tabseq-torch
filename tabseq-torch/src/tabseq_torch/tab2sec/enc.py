@@ -1,7 +1,9 @@
-from tabseq_torch.dl import PaddedTabBatch
-from torch import nn
-import torch
 from abc import abstractmethod
+
+import torch
+from torch import nn
+
+from tabseq_torch.dl import PaddedTabBatch
 
 
 class Encoder(nn.Module):

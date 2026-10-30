@@ -14,7 +14,7 @@ from tabseq_torch.dl.lazy_dataset import (
 )
 from tabseq_torch.dl.lazy_dataset_catalog import DataCatalog
 from tabseq_torch.dl.padded_batch import (
-    SeqData,
+    GroupTensors,
 )
 
 
@@ -242,7 +242,7 @@ def test_lazy_random_split(create_test_data, lazy_dataset, src_tb_path, dc, tx_s
     assert len(train_ds) + len(test_ds) == len(lazy_dataset)
     materialaized_len = 0
     materialaized_gnum = 0
-    gd: SeqData
+    gd: GroupTensors
     for gd in iter(lazy_dataset):
         materialaized_len += len(gd)
         materialaized_gnum += 1
@@ -307,7 +307,7 @@ def test_lazy_dataset_init(
     lazy_dataset.set_numdata(data_path=src_tb_path, columns_to_select=["amnt"])
     lazy_dataset.set_targetmeta(data_path=dc.targets, target_column="flag")
     size = 0
-    gd: SeqData
+    gd: GroupTensors
     app_id = tx_target_sample["app_id"][0]
     expected_target = tx_target_sample["flag"][0]
     target = -1

@@ -11,7 +11,7 @@ from torch.utils.data import IterableDataset
 from tabseq_torch.dl import CatNum
 from tabseq_torch.dl.chunk_reader import ChunkReader, DDChunkReader
 from tabseq_torch.dl.encoder import read_json
-from tabseq_torch.dl.padded_batch import SeqData
+from tabseq_torch.dl.padded_batch import GroupTensors
 from tabseq_torch.dl.tb_dataset import ColumnType, TbDataset
 from tabseq_torch.dl.types import TbGroupItems
 
@@ -326,7 +326,7 @@ def ds_memory_usage(
         gindeces = lazy_dataset.chunk_reader.gids
         if read_groups:
             for gidx in gindeces:
-                gd: SeqData = lazy_dataset.create_group_data(
+                gd: GroupTensors = lazy_dataset.create_group_data(
                     group_items=chunk_reader.get_group_items(gidx),
                     gid=gidx,
                 )
@@ -351,7 +351,7 @@ def lazy_dataset_test(
     chunk_reader._num_chunks = num_chunks
     rows = 0
     groups = 0
-    gd: SeqData
+    gd: GroupTensors
     for gd in lazy_dataset:
         if dryrun:
             print(f"random seq len={len(gd)}")

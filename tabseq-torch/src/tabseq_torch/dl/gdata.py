@@ -3,9 +3,9 @@ from collections.abc import Hashable, Iterator
 from tabseq_torch.dl.types import ColTensor, ColumnsByType
 
 
-class SeqData:
+class GroupTensors:
     """
-    SeqData represents the sequence as a set of tensors;
+    GroupTensors represents the group data as a set of tensors;
     each tensor corresponds to the group and column in the input table.
     All tensors belonging to the same group must have the same length(a slice of the table),
     but can be of different types.

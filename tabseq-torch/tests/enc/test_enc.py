@@ -1,7 +1,7 @@
 import pytest
 import torch
 from tabseq_torch.dl import CatNum, ColumnType, PaddedTabBatch, cat_embedding_params
-from tabseq_torch.dl.padded_batch import SeqData
+from tabseq_torch.dl.padded_batch import GroupTensors
 from tabseq_torch.dl.tb_dataset import TbDataset
 from tabseq_torch.tab2sec.cat import CatColumnsEncoder
 from tabseq_torch.tab2sec.num import NumColumnsEncoder
@@ -30,7 +30,7 @@ def catnum() -> CatNum:
 
 @pytest.fixture
 def padded_batch(dataset) -> PaddedTabBatch:
-    g1: SeqData = dataset.create_group_data(
+    g1: GroupTensors = dataset.create_group_data(
         group_items={
             "name_chars": [3, 2, 1, 1, 3],
             "vc": [1, 2, 1, 2, 2],
@@ -40,7 +40,7 @@ def padded_batch(dataset) -> PaddedTabBatch:
         },
         gid=1,
     )
-    g2: SeqData = dataset.create_group_data(
+    g2: GroupTensors = dataset.create_group_data(
         group_items={
             "name_chars": [3, 3, 2, 1, 2],
             "vc": [1, 2, 2, 1, 2],
