@@ -7,32 +7,32 @@ from torch.nn.utils.rnn import pad_sequence
 
 from tabseq_torch.dl.seqdata import SeqData
 from tabseq_torch.dl.tb_dataset import ColumnsByType, ColumnType
-from tabseq_torch.dl.types import ColTensor, Seqs
+from tabseq_torch.dl.types import ColBatch, ColTensor
 
 type Batch = Annotated[Tensor, "2D"]
 
 
 class PaddedTabBatch:
-    def __init__(self, batch_of_groups: list[SeqData]):
+    def __init__(self, batch_data: list[SeqData]):
         # save lengths befor padding
         self._lengths: list[int] = []
-        column_sequences: defaultdict[Hashable, Seqs] = defaultdict(list)
+        column_sequences: defaultdict[Hashable, ColBatch] = defaultdict(list)
         self._batche_by_column: dict[Hashable, Batch] = defaultdict(Tensor)
         self._type_columns: ColumnsByType = defaultdict(list[str])
         targets: list = []
-        self._batch_size = len(batch_of_groups)
-        self._columns_by_type = batch_of_groups[0].type_columns
-        for group_data in batch_of_groups:
-            self._lengths.append(len(group_data))
-            targets.append(group_data.target)
-            for column in group_data:
-                seq: ColTensor = group_data[column]
-                column_sequences[column].append(seq)
+        self._batch_size = len(batch_data)
+        self._columns_by_type = batch_data[0].type_columns
+        for seq_data in batch_data:
+            self._lengths.append(len(seq_data))
+            targets.append(seq_data.target)
+            for column in seq_data:
+                colseq: ColTensor = seq_data[column]
+                column_sequences[column].append(colseq)
         self._targets: Tensor = tensor(targets, dtype=long)
 
         for column in column_sequences:
             self._batche_by_column[column] = pad_sequence(
-                column_sequences[column], batch_first=True, padding_value=0
+                sequences=column_sequences[column], batch_first=True, padding_value=0
             )
 
     def __getitem__(self, column: Hashable) -> Tensor:

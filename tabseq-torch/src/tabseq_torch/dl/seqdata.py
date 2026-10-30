@@ -7,6 +7,8 @@ class SeqData:
     """
     SeqData represents the sequence as a set of tensors;
     each tensor corresponds to the group and column in the input table.
+    All tensors belonging to the same group must have the same length(a slice of the table),
+    but can be of different types.
     """
 
     def __init__(
@@ -20,7 +22,7 @@ class SeqData:
         self._type_columns = type_columns
         self.column_tensor: dict[Hashable, ColTensor] = column_tensor
         self._target: int | None = target
-        # The group's sequences must be the same size.
+        # The group's tensors must be the same size.
         self._sec_len = len(self.column_tensor[next(iter(self.column_tensor.keys()))])
 
     def __getitem__(self, column_name: Hashable) -> ColTensor:
@@ -30,7 +32,7 @@ class SeqData:
         return iter(self.column_tensor.keys())
 
     def __str__(self) -> str:
-        return f"gid:\n {self.gid} \ntb seqs: \n{self.column_tensor} \n target: {self.target}"
+        return f"gid:\n {self.gid} \n input table data: \n{self.column_tensor} \n target: {self.target}"
 
     def __len__(self):
         return self._sec_len
