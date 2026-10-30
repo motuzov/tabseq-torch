@@ -2,12 +2,12 @@ from typing import cast
 
 from torch import LongTensor, tensor
 
-from tabseq_torch.dl.group_data import GroupData
+from tabseq_torch.dl.seqdata import SeqData
 from tabseq_torch.dl.types import (
     ColumnGroupItems,
     ColumnsByType,
     ColumnType,
-    Seq,
+    ColTensor,
     TbGroupItems,
 )
 
@@ -47,20 +47,20 @@ class TbDataset:
         for column_type, columns in self.type_columns.items():
             self._column2type |= zip(columns, [column_type] * len(columns))
 
-    def _items2seq(self, col_items: ColumnGroupItems, column: str) -> Seq:
+    def _items2seq(self, col_items: ColumnGroupItems, column: str) -> ColTensor:
         column_type: ColumnType = self._column2type[column]
         if column_type == ColumnType.CAT:
             return LongTensor(col_items)
         elif column_type == ColumnType.NUM:
             return tensor(col_items)
 
-    def create_group_data(self, group_items: TbGroupItems, gid) -> GroupData:
+    def create_group_data(self, group_items: TbGroupItems, gid) -> SeqData:
         target = None
         if self.target_column:
             target = group_items[self.target_column]
             # del group_items[self.target_column]
-        return GroupData(
-            column_seq={
+        return SeqData(
+            column_tensor={
                 column: self._items2seq(group_items[column], cast(str, column))
                 for column in self._column2type
             },

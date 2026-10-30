@@ -5,18 +5,18 @@ from typing import Annotated
 from torch import Tensor, device, long, tensor
 from torch.nn.utils.rnn import pad_sequence
 
-from tabseq_torch.dl.group_data import GroupData
+from tabseq_torch.dl.seqdata import SeqData
 from tabseq_torch.dl.tb_dataset import ColumnsByType, ColumnType
-from tabseq_torch.dl.types import Seq, Seqs
+from tabseq_torch.dl.types import ColTensor, Seqs
 
-Batch = Annotated[Tensor, "2D"]
+type Batch = Annotated[Tensor, "2D"]
 
 
 class PaddedTabBatch:
-    def __init__(self, batch_of_groups: list[GroupData]):
+    def __init__(self, batch_of_groups: list[SeqData]):
         # save lengths befor padding
         self._lengths: list[int] = []
-        column_sequences = defaultdict(Seqs)
+        column_sequences: defaultdict[Hashable, Seqs] = defaultdict(list)
         self._batche_by_column: dict[Hashable, Batch] = defaultdict(Tensor)
         self._type_columns: ColumnsByType = defaultdict(list[str])
         targets: list = []
@@ -26,7 +26,7 @@ class PaddedTabBatch:
             self._lengths.append(len(group_data))
             targets.append(group_data.target)
             for column in group_data:
-                seq: Seq = group_data[column]
+                seq: ColTensor = group_data[column]
                 column_sequences[column].append(seq)
         self._targets: Tensor = tensor(targets, dtype=long)
 
@@ -60,10 +60,10 @@ class PaddedTabBatch:
         self._targets = self._targets.to(device=device)
 
 
-def dummy_collate_fn(samples_from_tb: list[GroupData]) -> list[GroupData]:
+def dummy_collate_fn(samples_from_tb: list[SeqData]) -> list[SeqData]:
     return samples_from_tb
 
 
-def collate_padded_batch_fn(samples_from_tb: list[GroupData]) -> PaddedTabBatch:
+def collate_padded_batch_fn(samples_from_tb: list[SeqData]) -> PaddedTabBatch:
     # batch of padded tensors
     return PaddedTabBatch(samples_from_tb)

@@ -15,7 +15,6 @@ from tabseq_torch.dl.encoder import (
     read_json as read_json,
 )
 from tabseq_torch.dl.gpdf_dataset import PdDataset as PdDataset
-from tabseq_torch.dl.group_data import GroupData as GroupData
 from tabseq_torch.dl.lazy_dataset import (
     LazyDataset as LazyDataset,
 )
@@ -41,6 +40,7 @@ from tabseq_torch.dl.padded_batch import (
 from tabseq_torch.dl.padded_batch import (
     dummy_collate_fn as dummy_collate_fn,
 )
+from tabseq_torch.dl.seqdata import SeqData as SeqData
 from tabseq_torch.dl.tb_dataset import ColumnsByType as ColumnsByType
 from tabseq_torch.dl.tb_dataset import ColumnType as ColumnType
 from tabseq_torch.dl.tb_dataset import TbDataset as TbDataset

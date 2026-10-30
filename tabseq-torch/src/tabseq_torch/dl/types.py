@@ -6,18 +6,18 @@ from numpy.typing import ArrayLike
 from torch import Tensor
 
 # 1D Tensor torch.tensor([1, 3, 7])
-Seq = Annotated[Tensor, "1D"]
-Seqs = list[Seq]
+type ColTensor = Annotated[Tensor, "1D"]
+type Seqs = list[ColTensor]
 
 
-TbItem = int | float
-ColumnGroupItems = list[TbItem] | ArrayLike
-TbGroupItems = dict[Hashable, ColumnGroupItems]
+type TbItem = int | float
+type ColumnGroupItems = list[TbItem] | ArrayLike
+type TbGroupItems = dict[Hashable, ColumnGroupItems]
 
 # Seqs – list of variable length sequences to passes to torch.nn.utils.rnn.pad_sequence
-ColumnSeq = dict[Hashable, Seq]
-Seqs = list[Seq]
-ColumnSeqs = dict[Hashable, Seqs]
+type ColumnSeq = dict[Hashable, ColTensor]
+type Seqs = list[ColTensor]
+type ColumnSeqs = dict[Hashable, Seqs]
 
 INDEX = "index"
 
@@ -28,4 +28,4 @@ class ColumnType(Enum):
     TARGET = 3
 
 
-ColumnsByType = dict[ColumnType, list[str]]
+type ColumnsByType = dict[ColumnType, list[str]]

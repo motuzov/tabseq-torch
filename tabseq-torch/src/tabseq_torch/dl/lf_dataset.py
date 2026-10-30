@@ -11,7 +11,7 @@ import pandas as pd
 import polars as pl
 from torch.utils.data import IterableDataset, get_worker_info
 
-from tabseq_torch.dl.padded_batch import GroupData
+from tabseq_torch.dl.padded_batch import SeqData
 from tabseq_torch.dl.tb_dataset import INDEX, ColumnsByType, ColumnType, TbDataset
 
 
@@ -282,7 +282,7 @@ class LazyDataset(TbDataset, IterableDataset):
                 for df in dfs:
                     gdf = df.loc[gidx]
                     group_items |= gdf.to_dict()
-                yield GroupData(
+                yield SeqData(
                     column_items=group_items,
                     columns_by_type=self.columns_by_type,
                     label=cast(int, lable),

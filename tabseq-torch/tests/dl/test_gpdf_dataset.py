@@ -6,7 +6,7 @@ import pytest
 import torch
 from tabseq_torch.dl import cat_embedding_params
 from tabseq_torch.dl.gpdf_dataset import PdDataset
-from tabseq_torch.dl.group_data import GroupData
+from tabseq_torch.dl.seqdata import SeqData
 from tabseq_torch.dl.padded_batch import (
     PaddedTabBatch,
     collate_padded_batch_fn,
@@ -119,7 +119,7 @@ def pd_dataset(
 
 
 def test_pd_dataset_getitm(pd_dataset: PdDataset):
-    dg: GroupData = pd_dataset[0]
+    dg: SeqData = pd_dataset[0]
     assert dg.target == 0
     assert isinstance(dg["vc"], LongTensor)
     expected_tensor: torch.Tensor = LongTensor([1, 1, 2, 2, 1, 2])
@@ -136,8 +136,8 @@ def test_compatibility_with_dataloader(pd_dataset: PdDataset, capsys):
     loader = torch.utils.data.DataLoader(
         dataset=pd_dataset, shuffle=True, batch_size=4, collate_fn=dummy_collate_fn
     )
-    first_batch_of_sampels: list[GroupData] = next(iter(loader))
-    first_sample: GroupData = first_batch_of_sampels[0]
+    first_batch_of_sampels: list[SeqData] = next(iter(loader))
+    first_sample: SeqData = first_batch_of_sampels[0]
     with capsys.disabled():
         print(f"\nfirst data point in batch:\n{first_sample}\n")
     s = first_sample["name_chars"]

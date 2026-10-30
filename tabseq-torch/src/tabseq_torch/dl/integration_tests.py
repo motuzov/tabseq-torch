@@ -12,7 +12,7 @@ from tabseq_torch.dl import (
     ds_memory_usage,
     read_num_grous,
 )
-from tabseq_torch.dl.group_data import GroupData
+from tabseq_torch.dl.seqdata import SeqData
 
 
 def ds_memory_usage_tx(
@@ -81,13 +81,13 @@ def check_column_reading(
     cl: str,
 ) -> None:
     expected_names = read_column_goups(data_path=data_path, groupby=groupby, cl=cl)
-    gd: GroupData
+    gd: SeqData
     for gd in lazy_dataset:
-        seq = gd.column_seq[cl]
+        seq = gd.column_tensor[cl]
         expected_names.loc[gd.gid][cl]
         if not np.array_equal(expected_names.loc[gd.gid][cl], seq.numpy()):
             print(gd.gid)
-            print(gd.column_seq[cl])
+            print(gd.column_tensor[cl])
             print(expected_names.loc[gd.gid])
             break
     print("Ok!")
