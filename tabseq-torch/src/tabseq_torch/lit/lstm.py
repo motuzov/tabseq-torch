@@ -47,7 +47,7 @@ class LitMulticlassTabLSTM(L.LightningModule):
 
     def _forward(self, batch: PaddedTabBatch):
         rnn_batch: torch.Tensor = self.tab2sec(batch)
-        output = self.b_lstm(rnn_batch)
+        output = self.b_lstm(rnn_batch, batch.lengths)
         loss = self.loss(output, batch.targets)
         acc = self.accuracy(output, batch.targets)
         return loss, acc

@@ -1,26 +1,23 @@
-import torch
-from typing import cast, Any
 from enum import Enum, auto
+from typing import Any, cast
 
 import lightning as L
+import torch
+from lightning.pytorch.loggers import TensorBoardLogger
+from torch.utils.tensorboard.writer import SummaryWriter
 from torchmetrics.classification import (
     BinaryAUROC,
     BinaryAveragePrecision,
     BinaryPrecisionRecallCurve,
 )
-import matplotlib.pyplot as plt
-
-from lightning.pytorch.loggers import TensorBoardLogger
-from torch.utils.tensorboard.writer import SummaryWriter
 
 from tabseq_torch.dl import (
     CatColEmbeddingParams,
-    ColumnType,
     ColumnsByType,
+    ColumnType,
     PaddedTabBatch,
 )
-
-from tabseq_torch.nn.lstm import PoolingType, TabLSTM, Attention
+from tabseq_torch.nn.lstm import Attention, PoolingType, TabLSTM
 from tabseq_torch.tab2sec import CatColumnsEncoder, NumColumnsEncoder, Tab2Seq
 
 
@@ -85,7 +82,7 @@ class LitImbBinTabLSTM(L.LightningModule):
 
     def _forward(self, batch: PaddedTabBatch) -> torch.Tensor:
         e_batch: torch.Tensor = self.tab2sec(batch)
-        output = self.b_lstm(e_batch).squeeze(-1)
+        output = self.b_lstm(e_batch, batch.lengths).squeeze(-1)
         return output
 
     def _log_auc(self, probs: torch.Tensor, targets: torch.Tensor, batch_idx: int):
